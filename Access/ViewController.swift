@@ -15,6 +15,61 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //gcRequest()
+        retrieveTwitter()
+    }
+    
+    
+    
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    
+    func gcRequest(text : String) {
+        //let urlAuthen = "https://api.twitter.com/oauth2/token";
+        let urlAuthen = "https://language.googleapis.com/v1/documents:analyzeSentiment?key=AIzaSyAGwAOOPRKjSDxQZj4WJUhYM8zHTElywjI";
+        
+        
+     /*   let parameters: Parameters = [
+            "encodingType": "UTF8",
+            "document": [
+                "type": "PLAIN_TEXT",
+                "content": "Enjoy your vacation! I wanna kill myself.",
+            ]
+        ]*/
+        
+        let parameters: Parameters = [
+            "encodingType": "UTF8",
+            "document": [
+                "type": "PLAIN_TEXT",
+                "content": text,
+            ]
+        ]
+        
+        
+        Alamofire.request(urlAuthen, method: .post, parameters: parameters,encoding: JSONEncoding.default).responseJSON
+            { (response:DataResponse) in
+                switch response.result {
+                case .success(let value):
+                    let jsonAuthen = JSON(value)
+                    //print(jsonAuthen)
+                    print(text)
+                    print(jsonAuthen["documentSentiment"]["magnitude"])
+                    print(jsonAuthen["documentSentiment"]["score"])
+                case .failure(let error):
+                    print(error)
+                    return
+                }
+        }
+
+    }
+    
+    
+    func retrieveTwitter() {
         let twitterID = "dropaphone"
         let customerKey = "ZfyJo2mBTk1ZZELJRe7soNAyz"
         let customerSecret = "fOuA7PwFBrU64zX0ahlu7wiFPzXmN3xaHJFENAC0wVu71VZFrd"
@@ -27,6 +82,8 @@ class ViewController: UIViewController {
         let headers = ["Authorization" : authen,
                        "Content-Type": "application/x-www-form-urlencoded"]
         let parameters: Parameters = ["grant_type": "client_credentials"]
+        
+        
         Alamofire.request(urlAuthen, method: .post, parameters: parameters,headers: headers).responseJSON
             { (response:DataResponse) in
                 switch response.result {
@@ -34,8 +91,8 @@ class ViewController: UIViewController {
                     let jsonAuthen = JSON(value)
                     let token = jsonAuthen["access_token"].description
                     print("Token: \(token)")
-                   // let parametersTimeLine: Parameters = ["screen_name": twitterID,
-                   //                                       "since_id":"983456300179783680"]
+                    // let parametersTimeLine: Parameters = ["screen_name": twitterID,
+                    //                                       "since_id":"983456300179783680"]
                     let parametersTimeLine: Parameters = ["screen_name": twitterID]
                     
                     let timeLineAuthen = "Bearer \(token)";
@@ -53,21 +110,19 @@ class ViewController: UIViewController {
                                     print("ID: \(twitter["id"])")
                                     print("Time: \(twitter["created_at"])")
                                     print("Content: \(twitter["text"])")
+                                    self.gcRequest(text: twitter["text"].description)
+                                    
                                 }
                             case .failure(let error):
                                 print(error)
                             }
                     }
+                    
                 case .failure(let error):
                     print(error)
                     return
                 }
         }
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     
