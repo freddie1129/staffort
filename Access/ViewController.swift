@@ -16,12 +16,16 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         //gcRequest()
-        retrieveTwitter()
+        
+        
+        
+        let userID = "dropaphone"
+        
+       // retrieveTwitter(twitterId:userID,sinceId: "983456300179783680")
+        
+
+        retrieveTwitter(twitterId:userID,sinceId:nil)
     }
-    
-    
-    
-    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -29,19 +33,10 @@ class ViewController: UIViewController {
     }
     
     
-    func gcRequest(text : String) {
+    func gcRequest(text : String, since_id : String, create_date : String) {
         //let urlAuthen = "https://api.twitter.com/oauth2/token";
         let urlAuthen = "https://language.googleapis.com/v1/documents:analyzeSentiment?key=AIzaSyAGwAOOPRKjSDxQZj4WJUhYM8zHTElywjI";
-        
-        
-     /*   let parameters: Parameters = [
-            "encodingType": "UTF8",
-            "document": [
-                "type": "PLAIN_TEXT",
-                "content": "Enjoy your vacation! I wanna kill myself.",
-            ]
-        ]*/
-        
+   
         let parameters: Parameters = [
             "encodingType": "UTF8",
             "document": [
@@ -49,7 +44,7 @@ class ViewController: UIViewController {
                 "content": text,
             ]
         ]
-        
+
         
         Alamofire.request(urlAuthen, method: .post, parameters: parameters,encoding: JSONEncoding.default).responseJSON
             { (response:DataResponse) in
@@ -57,9 +52,13 @@ class ViewController: UIViewController {
                 case .success(let value):
                     let jsonAuthen = JSON(value)
                     //print(jsonAuthen)
-                    print(text)
-                    print(jsonAuthen["documentSentiment"]["magnitude"])
-                    print(jsonAuthen["documentSentiment"]["score"])
+                    print("==========================")
+                    print("twitter_id: \(since_id)")
+                    print("create_time: \(create_date)")
+                    print("twitter_content: \(text)")
+                    print("magnitude: \(jsonAuthen["documentSentiment"]["magnitude"])")
+                    print("score: \(jsonAuthen["documentSentiment"]["score"])")
+                    print("\n")
                 case .failure(let error):
                     print(error)
                     return
@@ -69,8 +68,8 @@ class ViewController: UIViewController {
     }
     
     
-    func retrieveTwitter() {
-        let twitterID = "dropaphone"
+    let twitterID = "dropaphone"
+    func retrieveTwitter(twitterId:String,sinceId:String?) {
         let customerKey = "ZfyJo2mBTk1ZZELJRe7soNAyz"
         let customerSecret = "fOuA7PwFBrU64zX0ahlu7wiFPzXmN3xaHJFENAC0wVu71VZFrd"
         let keyValue = "\(customerKey):\(customerSecret)"
@@ -91,9 +90,17 @@ class ViewController: UIViewController {
                     let jsonAuthen = JSON(value)
                     let token = jsonAuthen["access_token"].description
                     print("Token: \(token)")
+                    var parametersTimeLine : Parameters = Parameters();
+                    parametersTimeLine["screen_name"] = twitterId;
+                    if (sinceId != nil)
+                    {
+                        parametersTimeLine["since_id"] = sinceId;
+                    }
+                    
+                    
                     // let parametersTimeLine: Parameters = ["screen_name": twitterID,
                     //                                       "since_id":"983456300179783680"]
-                    let parametersTimeLine: Parameters = ["screen_name": twitterID]
+                   // let parametersTimeLine: Parameters = ["screen_name": twitterId]
                     
                     let timeLineAuthen = "Bearer \(token)";
                     let headersTimeLine = ["Authorization" : timeLineAuthen]
@@ -106,11 +113,12 @@ class ViewController: UIViewController {
                                 let json = JSON(value)
                                 for twitter in json.arrayValue
                                 {
-                                    print("==========================")
-                                    print("ID: \(twitter["id"])")
-                                    print("Time: \(twitter["created_at"])")
-                                    print("Content: \(twitter["text"])")
-                                    self.gcRequest(text: twitter["text"].description)
+                                   // print("==========================")
+                                   // print("since_id: \(twitter["id"].description)")
+                                   // print("create_time: \(twitter["created_at"].description)")
+                                   // print("twitter_content: \(twitter["text"].description)")
+                                   // print("\n")
+                                    self.gcRequest(text: twitter["text"].description, since_id:  twitter["id"].description,create_date:  twitter["text"].description)
                                     
                                 }
                             case .failure(let error):
